@@ -32,7 +32,7 @@ class KnowledgeRepository:
                 updated_at
             )
             VALUES (
-                :workspace_id::uuid,
+                CAST(:workspace_id AS uuid),
                 :source_type,
                 :source_ref,
                 :title,
@@ -73,7 +73,7 @@ class KnowledgeRepository:
         sql = text(
             """
             DELETE FROM knowledge_chunks
-            WHERE document_id = :document_id::uuid
+            WHERE document_id = CAST(:document_id AS uuid)
         """
         )
 
@@ -108,8 +108,8 @@ class KnowledgeRepository:
                 updated_at
             )
             VALUES (
-                :document_id::uuid,
-                :workspace_id::uuid,
+                CAST(:document_id AS uuid),
+                CAST(:workspace_id AS uuid),
                 :chunk_index,
                 :content,
                 :token_count,
@@ -156,7 +156,7 @@ class KnowledgeRepository:
                 kc.metadata,
                 1 - (kc.embedding <=> CAST(:query_embedding AS vector)) AS vector_score
             FROM knowledge_chunks kc
-            WHERE kc.workspace_id = :workspace_id::uuid
+            WHERE kc.workspace_id = CAST(:workspace_id AS uuid)
               AND kc.is_active = TRUE
               AND kc.embedding IS NOT NULL
             ORDER BY kc.embedding <=> CAST(:query_embedding AS vector)
@@ -196,7 +196,7 @@ class KnowledgeRepository:
                 kc.metadata,
                 ts_rank_cd(kc.content_tsv, websearch_to_tsquery('simple', :query)) AS lexical_score
             FROM knowledge_chunks kc
-            WHERE kc.workspace_id = :workspace_id::uuid
+            WHERE kc.workspace_id = CAST(:workspace_id AS uuid)
               AND kc.is_active = TRUE
               AND kc.content_tsv @@ websearch_to_tsquery('simple', :query)
             ORDER BY lexical_score DESC
@@ -233,7 +233,7 @@ class KnowledgeRepository:
                 kc.content,
                 kc.metadata
             FROM knowledge_chunks kc
-            WHERE kc.workspace_id = :workspace_id::uuid
+            WHERE kc.workspace_id = CAST(:workspace_id AS uuid)
               AND kc.id::text = ANY(:chunk_ids)
             ORDER BY kc.chunk_index ASC
         """
@@ -261,7 +261,7 @@ class KnowledgeRepository:
             """
             SELECT id::text
             FROM knowledge_documents
-            WHERE workspace_id = :workspace_id::uuid
+            WHERE workspace_id = CAST(:workspace_id AS uuid)
               AND source_type = :source_type
               AND source_ref = :source_ref
         """
@@ -270,14 +270,14 @@ class KnowledgeRepository:
         delete_chunks_sql = text(
             """
             DELETE FROM knowledge_chunks
-            WHERE document_id = :document_id::uuid
+            WHERE document_id = CAST(:document_id AS uuid)
         """
         )
 
         delete_doc_sql = text(
             """
             DELETE FROM knowledge_documents
-            WHERE id = :document_id::uuid
+            WHERE id = CAST(:document_id AS uuid)
         """
         )
 
